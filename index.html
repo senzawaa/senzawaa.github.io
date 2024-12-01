@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chinese Vocabulary Quiz</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .setup-section {
+            margin-bottom: 20px;
+        }
+        .quiz-section {
+            display: none;
+        }
+        .option-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .option-button:hover {
+            background-color: #f0f0f0;
+        }
+        .option-button.selected {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+        .correct {
+            background-color: #c8e6c9 !important;
+            border-color: #4caf50 !important;
+        }
+        .incorrect {
+            background-color: #ffcdd2 !important;
+            border-color: #f44336 !important;
+        }
+        .progress {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .lesson-checkbox {
+            margin: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1976d2;
+        }
+        .wrong-answers {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff3e0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chinese Vocabulary Quiz</h1>
+        
+        <div id="setup" class="setup-section">
+            <h2>Select Lessons</h2>
+            <div id="lessonCheckboxes"></div>
+            <button onclick="startQuiz()">Start Quiz</button>
+        </div>
+
+        <div id="quiz" class="quiz-section">
+            <div class="progress">
+                <p>Question: <span id="questionNumber">0</span>/<span id="totalQuestions">0</span></p>
+                <p>Score: <span id="score">0</span></p>
+            </div>
+            
+            <h2>Translate: <span id="question"></span></h2>
+            <div id="options"></div>
+            <div id="feedback"></div>
+            <button id="nextButton" style="display: none;" onclick="nextQuestion()">Next Question</button>
+        </div>
+
+        <div id="results" class="results" style="display: none;">
+            <h2>Quiz Complete!</h2>
+            <p>Final Score: <span id="finalScore">0</span>/<span id="finalTotal">0</span></p>
+            <div id="wrongAnswers" class="wrong-answers"></div>
+            <button onclick="resetQuiz()">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        const lessons = [
+            [
+                ["祖国", "motherland"], ["花朵", "flower"], ["仔细", "careful"],
+                ["卷子", "test paper"], ["代替", "replace"], ["课程", "course"],
+                ["降低", "lower, reduce"], ["轻松", "relax"], ["太阳", "sun"],
+                ["童年", "childhood"], ["身体", "body"], ["初中", "junior high school"],
+                ["难度", "difficult"], ["容易", "easily"], ["教育", "education"]
+            ],
+            [
+                ["文科", "arts"], ["考生", "examinee"], ["公布", "announce"],
+                ["保证", "guarantee"], ["举行", "hold"], ["高考", "college entrance exam"],
+                ["分数", "score"], ["需要", "need"], ["选择", "select"],
+                ["平均", "average"], ["名牌", "famous brand"], ["永远", "forever"],
+                ["大学", "university"], ["参加", "participate"], ["科目", "subject"]
+            ],
+            [
+                ["话题", "topic"], ["机器", "machine"], ["训练", "train"],
+                ["思考", "think"], ["劳动", "work"], ["农村", "countryside"],
+                ["将来", "future"], ["词汇", "vocabulary"], ["社会", "society"],
+                ["健身", "fitness"], ["体育", "PE"], ["家长", "parent"],
+                ["希望", "hope"], ["道路", "road"], ["司机", "driver"]
+            ],
+            [
+                ["事业", "career"], ["男性", "male"], ["主妇", "housewife"],
+                ["家务", "household chores"], ["合格", "qualified"], ["保姆", "nanny"],
+                ["学历", "educational background"], ["妻子", "wife"], ["职业", "occupation"],
+                ["买菜", "buy groceries"], ["雇佣", "employ"], ["厨房", "kitchen"],
+                ["结婚", "get married"], ["获得", "obtain"], ["经济", "economy"]
+            ],
+            [
+                ["从前", "in the past"], ["取得", "obtain, achieve"], ["歧视", "discrimination"],
+                ["雇员", "employee"], ["严格", "strict"], ["保密", "confidential"],
+                ["议论", "discuss"], ["待遇", "treatment"], ["支付", "pay"],
+                ["正确", "correct"], ["历史", "history"], ["娱乐", "entertainment"],
+                ["努力", "work hard"], ["变化", "change"], ["估计", "estimate"]
+            ],
+            [
+                ["游客", "tourist"], ["星级", "star rating"], ["安全", "safe"],
+                ["路线", "route"], ["报警", "call police"], ["保安", "security guard"],
+                ["冲动", "impulsive"], ["时差", "jet lag"], ["航班", "flight"],
+                ["材料", "material"], ["继续", "continue"], ["酒店", "hotel"],
+                ["名片", "business card"], ["迷路", "get lost"], ["商品", "merchandise"]
+            ]
+        ];
+
+        let currentWords = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let wrongAnswers = [];
+        let selectedAnswer = null;
+
+        // Initialize lesson checkboxes
+        window.onload = function() {
+            const checkboxesContainer = document.getElementById('lessonCheckboxes');
+            lessons.forEach((lesson, index) => {
+                const div = document.createElement('div');
+                div.className = 'lesson-checkbox';
+                div.innerHTML = `
+                    <input type="checkbox" id="lesson${index + 1}" value="${index}">
+                    <label for="lesson${index + 1}">Lesson ${index + 1}</label>
+                `;
+                checkboxesContainer.appendChild(div);
+            });
+        };
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startQuiz() {
+            const selectedLessons = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(cb => parseInt(cb.value));
+            
+            if (selectedLessons.length === 0) {
+                alert('Please select at least one lesson!');
+                return;
+            }
+
+            currentWords = [];
+            selectedLessons.forEach(lessonIndex => {
+                currentWords = currentWords.concat(lessons[lessonIndex]);
+            });
+            
+            currentWords = shuffle([...currentWords]);
+            currentQuestion = 0;
+            score = 0;
+            wrongAnswers = [];
+
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            document.getElementById('totalQuestions').textContent = currentWords.length;
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            if (currentQuestion >= currentWords.length) {
+                showResults();
+                return;
+            }
+
+            document.getElementById('questionNumber').textContent = currentQuestion + 1;
+            document.getElementById('score').textContent = score;
+            document.getElementById('question').textContent = currentWords[currentQuestion][0];
+            document.getElementById('nextButton').style.display = 'none';
+            document.getElementById('feedback').innerHTML = '';
+
+            const correctAnswer = currentWords[currentQuestion][1];
+            const allWords = currentWords.map(word => word[1]);
+            let options = [correctAnswer];
+
+            while (options.length < 4) {
+                const randomWord = allWords[Math.floor(Math.random() * allWords.length)];
+                if (!options.includes(randomWord)) {
+                    options.push(randomWord);
+                }
+            }
+
+            options = shuffle(options);
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selected, button) {
+            if (selectedAnswer !== null) return; // Prevent multiple selections
+            selectedAnswer = selected;
+            
+            const correctAnswer = currentWords[currentQuestion][1];
+            const allButtons = document.querySelectorAll('.option-button');
+            
+            allButtons.forEach(btn => {
+                if (btn.textContent === correctAnswer) {
+                    btn.classList.add('correct');
+                }
+                btn.disabled = true;
+            });
+
+            if (selected === correctAnswer) {
+                score++;
+                document.getElementById('feedback').innerHTML = '<p style="color: green;">Correct!</p>';
+            } else {
+                button.classList.add('incorrect');
+                document.getElementById('feedback').innerHTML = 
+                    `<p style="color: red;">Wrong! ${currentWords[currentQuestion][0]} means ${correctAnswer}</p>`;
+                wrongAnswers.push(currentWords[currentQuestion]);
+            }
+
+            document.getElementById('nextButton').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            selectedAnswer = null;
+            currentQuestion++;
+            displayQuestion();
+        }
+
+        function showResults() {
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalTotal').textContent = currentWords.length;
+
+            const wrongAnswersDiv = document.getElementById('wrongAnswers');
+            if (wrongAnswers.length > 0) {
+                let html = '<h3>Words you got wrong:</h3><ul>';
+                wrongAnswers.forEach(word => {
+                    html += `<li>${word[0]} : ${word[1]}</li>`;
+                });
+                html += '</ul>';
+                wrongAnswersDiv.innerHTML = html;
+            } else {
+                wrongAnswersDiv.innerHTML = '<p>Perfect score! You got all words correct!</p>';
+            }
+        }
+
+        function resetQuiz() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('setup').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
