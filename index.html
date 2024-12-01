@@ -29,14 +29,18 @@
             width: 100%;
             padding: 10px;
             margin: 8px 0;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
             border-radius: 4px;
-            background-color: white;
+            background-color: #f8f9fa;  /* Light gray background */
+            color: #333;  /* Dark text color */
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
+            font-size: 16px;
+            text-align: left;
         }
         .option-button:hover {
-            background-color: #f0f0f0;
+            background-color: #e9ecef;  /* Slightly darker on hover */
+            border-color: #adb5bd;
         }
         .option-button.selected {
             background-color: #e3f2fd;
@@ -45,10 +49,12 @@
         .correct {
             background-color: #c8e6c9 !important;
             border-color: #4caf50 !important;
+            color: #2e7d32 !important;  /* Darker green text */
         }
         .incorrect {
             background-color: #ffcdd2 !important;
             border-color: #f44336 !important;
+            color: #c62828 !important;  /* Darker red text */
         }
         .progress {
             margin: 20px 0;
@@ -62,26 +68,35 @@
         .lesson-checkbox {
             margin: 5px;
         }
-        button {
+        button:not(.option-button) {
             padding: 10px 20px;
             background-color: #2196f3;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 16px;
         }
-        button:hover {
+        button:not(.option-button):hover {
             background-color: #1976d2;
         }
         .wrong-answers {
             margin-top: 20px;
-            padding: 10px;
+            padding: 15px;
             background-color: #fff3e0;
             border-radius: 4px;
+            border: 1px solid #ffe0b2;
+        }
+        #question {
+            font-size: 24px;
+            color: #333;
+            margin: 20px 0;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
+    <!-- Rest of the HTML remains the same -->
     <div class="container">
         <h1>Chinese Vocabulary Quiz</h1>
         
@@ -111,6 +126,7 @@
         </div>
     </div>
 
+    <!-- JavaScript remains the same -->
     <script>
         const lessons = [
             [
